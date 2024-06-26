@@ -1,3 +1,6 @@
 pytest
 calc
 anthropic
+argparse
+dotenv
+sys

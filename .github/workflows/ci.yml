@@ -1,10 +1,9 @@
-name: CI
+name: Code Review with AI
 
 on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +20,9 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run tests
+    - name: Get git diff
       run: |
-        pytest
+        git diff > test_diff.txt
+
+    - name: Run Python script for code review
+      run: python review.py -f test_diff.txt
