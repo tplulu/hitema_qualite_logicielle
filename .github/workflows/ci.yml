@@ -21,8 +21,7 @@ jobs:
         pip install -r requirements.txt
 
     - name: Get git diff
-      run: |
-        git diff > test_diff.txt
+      run: git diff > test_diff.txt
 
     - name: Set up environment variables
       env:
