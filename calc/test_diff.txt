@@ -1,0 +1,15 @@
+diff --git a/example.py b/example.py
+index e69de29..b0ba22a 100644
+--- a/example.py
++++ b/example.py
+@@ -0,0 +1,10 @@
++def add(a, b):
++    return a + b
++
++def subtract(a, b):
++    return a - b
++
++if __name__ == "__main__":
++    print(add(1, 2))
++    print(subtract(5, 3))
++
