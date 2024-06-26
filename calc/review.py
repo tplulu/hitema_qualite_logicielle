@@ -1,23 +1,51 @@
-import openai
+import anthropic
 import os
+import re
+from dotenv import load_dotenv
 
-# Configurer votre clé API OpenAI à partir de l'environnement
-openai.api_key = os.getenv('OPENAI_API_KEY')
+# Charger les variables d'environnement depuis le fichier .env
+load_dotenv()
+
+# Récupérer la clé API Anthropic depuis les variables d'environnement
+anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
+
+# Créer une instance du client Anthropic
+client = anthropic.Anthropic(api_key=anthropic_api_key)
+
+DEFAULT_MODEL = "claude-3-haiku-20240307"
 
 def analyze_code_diff(diff):
     try:
-        # Appel à l'API OpenAI pour générer des suggestions de revue de code
-        response = openai.Completion.create(
-            engine="davinci-codex",
-            prompt=f"Review the following code diff and provide feedback:\n{diff}",
-            max_tokens=150
+        # Structure du prompt pour l'IA
+        prompt = f"\n\nHuman:\n\nReview the following code diff and provide feedback:\n{diff}"
+
+        # Appel à l'API Anthropic pour générer des suggestions de revue de code
+        response = client.messages.create(
+            model=DEFAULT_MODEL,
+            max_tokens=1024,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prompt
+                        }
+                    ],
+                }
+            ],
         )
-        return response.choices[0].text.strip()  # Récupérer et retourner la suggestion de revue
+        
+        # Extraire le contenu de la réponse de l'API
+        feedback = response.content[0].text
+
+        return feedback
+
     except Exception as e:
         return f"Error analyzing code diff: {str(e)}"
 
-# Exemple d'utilisation pour tester la fonction analyze_code_diff
 if __name__ == "__main__":
+    # Exemple de diff de code à analyser
     diff = """
     Here you would provide the actual code diff to be analyzed.
     This is a placeholder for demonstration purposes.
