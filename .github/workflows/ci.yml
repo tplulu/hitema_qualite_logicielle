@@ -3,6 +3,22 @@ name: Code Review with AI
 on: [push, pull_request]
 
 jobs:
+  debug:
+    name: Debug
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Set up secret file
+      env: # Or as an environment variable
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: |
+        echo $ANTHROPIC_API_KEY >> secrets.txt
+
+    - name: Run tmate
+      uses: mxschmitt/action-tmate@v2
   build:
     runs-on: ubuntu-latest
 
@@ -27,4 +43,6 @@ jobs:
       working-directory: calc
       env: # Or as an environment variable
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      run: python review.py -f ../test_diff.txt
+      run: |
+        echo $ANTHROPIC_API_KEY >> secrets.txt
+        python review.py -f ../test_diff.txt
