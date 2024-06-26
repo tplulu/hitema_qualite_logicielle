@@ -24,9 +24,9 @@ jobs:
       run: |
         git diff > test_diff.txt
 
-     - name: Set up environment variables
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    - name: Set up environment variables
+      env:
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     - name: Run Python script for code review
       working-directory: calc
