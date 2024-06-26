@@ -26,7 +26,8 @@ jobs:
     - name: Set up environment variables
       env:
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: echo "Setting up environment variables"
 
     - name: Run Python script for code review
       working-directory: calc
-      run: python review.py -f test_diff.txt
+      run: python review.py -f ../test_diff.txt
