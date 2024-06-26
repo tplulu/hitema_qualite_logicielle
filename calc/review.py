@@ -42,7 +42,7 @@ def analyze_code_diff(diff):
         )
 
         # Extraire le contenu de la réponse de l'API
-        feedback = response["messages"][0]["content"]
+        feedback = response.content[0].text
 
         return feedback
 
@@ -63,3 +63,4 @@ if __name__ == "__main__":
     parser.add_argument('-f', '--file', type=str, required=True, help='Path to the file containing the code diff')
     args = parser.parse_args()
     main(args.file)
+
