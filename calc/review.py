@@ -7,14 +7,14 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Récupérer la clé API Anthropic depuis les variables d'environnement
-anthropic_api_key = os.environ('ANTHROPIC_API_KEY')
+api_key = os.environ('ANTHROPIC_API_KEY')
 
 # Vérifier que la clé API est correctement lue
-if not anthropic_api_key:
+if not api_key:
     raise ValueError("La clé API Anthropic n'a pas été trouvée. Veuillez vérifier votre fichier .env.")
 
 # Créer une instance du client Anthropic
-client = anthropic.Anthropic(api_key=anthropic_api_key)
+client = anthropic.Anthropic(api_key=api_key)
 
 DEFAULT_MODEL = "claude-3-haiku-20240307"
 
