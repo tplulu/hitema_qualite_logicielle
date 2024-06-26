@@ -11,7 +11,7 @@ api_key = os.environ['ANTHROPIC_API_KEY']
 
 # Vérifier que la clé API est correctement lue
 if not api_key:
-    raise ValueError("La clé API Anthropic n'a pas été trouvée. Veuillez vérifier votre fichier .env.")
+    raise ValueError("La clé API Anthropic n'a pas été trouvée. Veuillez vérifier votre fichier .env !")
 
 # Créer une instance du client Anthropic
 client = anthropic.Anthropic(api_key=api_key)
