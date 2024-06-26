@@ -2,5 +2,4 @@ pytest
 calc
 anthropic
 argparse
-dotenv
-sys
+python-dotenv

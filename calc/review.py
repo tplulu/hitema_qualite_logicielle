@@ -1,6 +1,5 @@
 import anthropic
 import os
-import sys
 import argparse
 from dotenv import load_dotenv
 
