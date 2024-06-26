@@ -22,7 +22,7 @@ DEFAULT_MODEL = "claude-3-haiku-20240307"
 def analyze_code_diff(diff):
     try:
         # Structure du prompt pour l'IA
-        prompt = "Human: Review the following code diff and provide feedback : {diff}"
+        prompt = "Human: Review the following code diff and provide feedback: {diff}"
 
         # Appel à l'API Anthropic pour générer des suggestions de revue de code
         response = client.messages.create(
