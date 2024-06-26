@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Récupérer la clé API Anthropic depuis les variables d'environnement
-anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
+anthropic_api_key = os.environ('ANTHROPIC_API_KEY')
 
 # Vérifier que la clé API est correctement lue
 if not anthropic_api_key:
