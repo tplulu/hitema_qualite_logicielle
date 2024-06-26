@@ -24,8 +24,10 @@ jobs:
       run: git diff > test_diff.txt
 
     - name: Set up environment variables
-      run: echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
+      env: # Or as an environment variable
+        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      run: echo "ANTHROPIC_API_KEY"
 
     - name: Run Python script for code review
       working-directory: calc
-      run: python review.py -f ../test_diff.txt -k ${{ secrets.ANTHROPIC_API_KEY }}
+      run: python review.py -f ../test_diff.txt

@@ -3,30 +3,29 @@ import os
 import argparse
 from dotenv import load_dotenv
 
-def load_api_key(api_key_env):
-    # Charger les variables d'environnement depuis le fichier .env
-    load_dotenv()
+# Charger les variables d'environnement depuis le fichier .env
+load_dotenv()
 
-    # Récupérer la clé API Anthropic depuis les variables d'environnement
-    anthropic_api_key = os.getenv(api_key_env)
+# Récupérer la clé API Anthropic depuis les variables d'environnement
+anthropic_api_key = os.getenv('ANTHROPIC_API_KEY')
 
-    # Vérifier que la clé API est correctement lue
-    if not anthropic_api_key:
-        raise ValueError(f"La clé API Anthropic n'a pas été trouvée. Veuillez vérifier votre fichier .env pour la variable {api_key_env}.")
+# Vérifier que la clé API est correctement lue
+if not anthropic_api_key:
+    raise ValueError("La clé API Anthropic n'a pas été trouvée. Veuillez vérifier votre fichier .env.")
 
-    return anthropic_api_key
+# Créer une instance du client Anthropic
+client = anthropic.Anthropic(api_key=anthropic_api_key)
 
-def analyze_code_diff(api_key, diff):
+DEFAULT_MODEL = "claude-3-haiku-20240307"
+
+def analyze_code_diff(diff):
     try:
-        # Créer une instance du client Anthropic
-        client = anthropic.Anthropic(api_key=api_key)
-
         # Structure du prompt pour l'IA
-        prompt = f"Human: Review the following code diff and provide feedback : {diff}"
+        prompt = "Human: Review the following code diff and provide feedback : {diff}"
 
         # Appel à l'API Anthropic pour générer des suggestions de revue de code
         response = client.messages.create(
-            model="claude-3-haiku-20240307",
+            model=DEFAULT_MODEL,
             max_tokens=1024,
             messages=[
                 {
@@ -49,21 +48,18 @@ def analyze_code_diff(api_key, diff):
     except Exception as e:
         return f"Error analyzing code diff: {str(e)}"
 
-def main():
-    parser = argparse.ArgumentParser(description='Analyze code diff for review.')
-    parser.add_argument('-f', '--file', type=str, required=True, help='Path to the file containing the code diff')
-    parser.add_argument('-k', '--api-key', type=str, required=True, help='API key for Anthropic')
-    args = parser.parse_args()
-
-    api_key = load_api_key(args.api_key)
-
+def main(file_path):
     try:
-        with open(args.file, 'r') as file:
+        with open(file_path, 'r') as file:
             diff = file.read()
-        feedback = analyze_code_diff(api_key, diff)
+        feedback = analyze_code_diff(diff)
         print(feedback)
     except Exception as e:
-        print(f"Error: {str(e)}")
+        print(f"Error reading file: {str(e)}")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Analyze code diff for review.')
+    parser.add_argument('-f', '--file', type=str, required=True, help='Path to the file containing the code diff')
+    args = parser.parse_args()
+    main(args.file)
+
