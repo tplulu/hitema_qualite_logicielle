@@ -42,8 +42,9 @@ jobs:
       - name: Create diff file
         run: |
           git diff > full_diff.txt
-          ALL_CHANGED_FILES=${{ steps.changed-files.outputs.all_changed_files }}
-          for file in ${ALL_CHANGED_FILES}; do
+          echo "Creating diffs for individual files..."
+          touch file_diffs.txt
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
             echo "Diff for $file:" >> file_diffs.txt
             git diff HEAD^ HEAD -- $file >> file_diffs.txt
             echo -e "\n\n" >> file_diffs.txt
