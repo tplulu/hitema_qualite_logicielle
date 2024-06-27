@@ -27,7 +27,7 @@ jobs:
       run: cat test_diff.txt  # Utilisez 'type test_diff.txt' si vous êtes sur Windows
 
     - name: Display contents of test_diff.txt using echo
-    run: echo "Contents of test_diff.txt:" && echo && cat test_diff.txt
+      run: echo "Contents of test_diff.txt:" && echo && cat test_diff.txt
 
     - name: Display contents of test_diff.txt using cat
     run: cat test_diff.txt
