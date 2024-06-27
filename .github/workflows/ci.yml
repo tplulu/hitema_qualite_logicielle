@@ -4,17 +4,18 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest  # Utilisez "windows-latest" ou "macos-latest" si nécessaire
+  diff:
+    runs-on: ubuntu-latest
     name: Test changed-files
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # OR "2" -> Pour récupérer le commit précédent.
+          fetch-depth: 0
 
       - name: Get changed files
         id: changed-files
@@ -24,37 +25,43 @@ jobs:
         env:
           ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
-          echo "Changed files:"
           for file in ${ALL_CHANGED_FILES}; do
             echo "$file was changed"
           done
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
+      - name: Save git diff to full_diff.txt
+        run: git diff > full_diff.txt
 
-      - name: Install dependencies
+      - name: Save diffs for changed files to file_diffs.txt
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Create diff file
-        run: |
-          git diff > full_diff.txt
-          echo "Creating diffs for individual files..."
-          touch file_diffs.txt
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          for file in ${ALL_CHANGED_FILES}; do
             echo "Diff for $file:" >> file_diffs.txt
             git diff HEAD^ HEAD -- $file >> file_diffs.txt
             echo -e "\n\n" >> file_diffs.txt
-          done
 
       - name: Display contents of file_diffs.txt
         run: cat file_diffs.txt
 
       - name: Run Python script for code review
         working-directory: calc
-        env: 
+        env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python review.py -f ../file_diffs.txt
+        run: python review.py -f ../file_diffs.txt > review_output.txt
+
+      - name: Display contents of review_output.txt
+        run: cat review_output.txt
+
+      - name: Comment on Pull Request
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ## AI Code Review Comments
+            ```text
+            $(cat review_output.txt)
+            ```
