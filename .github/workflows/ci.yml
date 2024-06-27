@@ -50,9 +50,6 @@ jobs:
             echo -e "\n\n" >> file_diffs.txt
           done
 
-      - name: Display contents of full_diff.txt
-        run: cat full_diff.txt
-
       - name: Display contents of file_diffs.txt
         run: cat file_diffs.txt
 
