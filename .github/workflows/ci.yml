@@ -3,6 +3,43 @@ name: Code Review with AI
 on: [push, pull_request]
 
 jobs:
+  name: diff
+    description: Compute a diff between head and base, and post it to a comment.
+    inputs:
+      base:
+        description: Path(s) of base (multiline)
+        required: true
+      head:
+        description: Path(s) of head (multiline)
+        required: true
+      label:
+        description: Label(s) to add or remove to indicate the diff (multiline)
+        required: false
+      comment-header:
+        description: Header of a comment to post
+        required: false
+        default: |
+          ## diff
+      comment-footer:
+        description: Footer of a comment to post
+        required: false
+        default: |
+          [See the workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          <!-- diff-action -->
+      update-if-exists:
+        description: If set, create or update a comment. This must be either replace, append or recreate
+        required: false
+      update-if-exists-key:
+        description: Key for update-if-exists, appended into a comment
+        required: true
+        default: ${{ github.workflow }}/${{ github.job }}
+      token:
+        description: GitHub token to post a comment
+        required: true
+        default: ${{ github.token }}
+    outputs:
+      different:
+        description: If there is any difference, `true`. Otherwise, `false`
   build:
     runs-on: ubuntu-latest
 
@@ -38,5 +75,4 @@ jobs:
       env: # Or as an environment variable
         ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       run: |
-        echo $ANTHROPIC_API_KEY >> secrets.txt
         python review.py -f ../test_diff.txt
