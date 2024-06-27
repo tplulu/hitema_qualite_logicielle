@@ -1,78 +1,53 @@
-name: Code Review with AI
+name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
-  name: diff
-    description: Compute a diff between head and base, and post it to a comment.
-    inputs:
-      base:
-        description: Path(s) of base (multiline)
-        required: true
-      head:
-        description: Path(s) of head (multiline)
-        required: true
-      label:
-        description: Label(s) to add or remove to indicate the diff (multiline)
-        required: false
-      comment-header:
-        description: Header of a comment to post
-        required: false
-        default: |
-          ## diff
-      comment-footer:
-        description: Footer of a comment to post
-        required: false
-        default: |
-          [See the workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
-          <!-- diff-action -->
-      update-if-exists:
-        description: If set, create or update a comment. This must be either replace, append or recreate
-        required: false
-      update-if-exists-key:
-        description: Key for update-if-exists, appended into a comment
-        required: true
-        default: ${{ github.workflow }}/${{ github.job }}
-      token:
-        description: GitHub token to post a comment
-        required: true
-        default: ${{ github.token }}
-  outputs:
-    different:
-      description: If there is any difference, `true`. Otherwise, `false`
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # Utilisez "windows-latest" ou "macos-latest" si nécessaire
+    name: Test changed-files
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # OR "2" -> Pour récupérer le commit précédent.
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+      - name: List all changed files
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          echo "Changed files:"
+          for file in ${ALL_CHANGED_FILES}; do
+            echo "$file was changed"
+          done
 
-    - name: Get git diff
-      run: git diff > test_diff.txt
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
 
-    - name: Display contents of test_diff.txt
-      run: cat test_diff.txt  # Utilisez 'type test_diff.txt' si vous êtes sur Windows
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Display contents of test_diff.txt using echo
-      run: echo "Contents of test_diff.txt:" && echo && cat test_diff.txt
+      - name: Create diff file
+        run: |
+          git diff > test_diff.txt
 
-    - name: Display contents of test_diff.txt using cat
-      run: cat test_diff.txt
+      - name: Display contents of test_diff.txt
+        run: cat test_diff.txt
 
-
-    - name: Run Python script for code review
-      working-directory: calc
-      env: # Or as an environment variable
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      run: |
-        python review.py -f ../test_diff.txt
+      - name: Run Python script for code review
+        working-directory: calc
+        env: 
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python review.py -f ../test_diff.txt
