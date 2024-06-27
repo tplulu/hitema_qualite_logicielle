@@ -37,9 +37,9 @@ jobs:
         description: GitHub token to post a comment
         required: true
         default: ${{ github.token }}
-    outputs:
-      different:
-        description: If there is any difference, `true`. Otherwise, `false`
+  outputs:
+    different:
+      description: If there is any difference, `true`. Otherwise, `false`
   build:
     runs-on: ubuntu-latest
 
