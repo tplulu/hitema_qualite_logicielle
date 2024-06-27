@@ -3,24 +3,15 @@ name: Code Review with AI
 on: [push, pull_request]
 
 jobs:
-  debug:
-    name: Debug
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v2
-
-    - name: Set up secret file
-      env: # Or as an environment variable
-        ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-      run: |
-        echo $ANTHROPIC_API_KEY >> secrets.txt
-
-    - name: Run tmate
-      uses: mxschmitt/action-tmate@v2
   build:
     runs-on: ubuntu-latest
+    - name: get changed files
+        id: getfile
+        run: |
+          echo "::set-output name=files::$(git diff-tree --no-commit-id --name-only -r ${{ github.sha }} | xargs)"
+    - name: echo output
+      run: |
+        echo ${{ steps.getfile.outputs.files }}
 
     steps:
     - name: Checkout code
