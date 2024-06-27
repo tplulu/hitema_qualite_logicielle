@@ -48,13 +48,14 @@ jobs:
         run: cat file_diffs.txt
 
       - name: Run Python script for code review
-        working-directory: calc
+        working-directory: calc  # Spécifiez le dossier où se trouve review.py
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python review.py -f ../file_diffs.txt > review_output.txt
+        run: |
+          python review.py -f ../file_diffs.txt > ../review_output.txt
 
       - name: Display contents of review_output.txt
-        run: cat review_output.txt
+        run: cat ../review_output.txt
 
       - name: Comment on Pull Request
         if: github.event_name == 'pull_request'
@@ -66,5 +67,5 @@ jobs:
           body: |
             ## AI Code Review Comments
             ```text
-            $(cat review_output.txt)
+            $(cat ../review_output.txt)
             ```
