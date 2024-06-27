@@ -53,10 +53,10 @@ def main(file_path):
         with open(file_path, 'r') as file:
             diff = file.read()
         feedback = analyze_code_diff(diff)
-        with open("review_output.txt", "w") as output_file:
-            output_file.write(feedback)
+        with open('../review_output.txt', 'w') as file:
+            file.write(feedback)
     except Exception as e:
-        with open("review_output.txt", "w") as output_file:
+        with open("../review_output.txt", "w") as output_file:
             output_file.write(f"Error reading file: {str(e)}")
 
 if __name__ == "__main__":

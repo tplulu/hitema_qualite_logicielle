@@ -1,12 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
   diff:
     runs-on: ubuntu-latest
+    name: Test changed-files
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: List files in parent directory
-        run: ls ..
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -16,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt  # Assurez-vous que requirements.txt contient "anthropic"
 
       - name: Get changed files
         id: changed-files
@@ -33,6 +42,7 @@ jobs:
             echo "Diff for $file:" >> file_diffs.txt
             git diff HEAD^ HEAD -- "$file" >> file_diffs.txt
             echo -e "\n\n" >> file_diffs.txt
+          done
 
       - name: Display contents of file_diffs.txt
         run: cat file_diffs.txt
@@ -41,11 +51,10 @@ jobs:
         working-directory: calc
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          python review.py -f ../file_diffs.txt > ../review_output.txt
+        run: python review.py -f ../file_diffs.txt > review_output.txt
 
       - name: Display contents of review_output.txt
-        run: cat ../review_output.txt
+        run: cat review_output.txt
 
       - name: Comment on Pull Request
         if: github.event_name == 'pull_request'
@@ -57,5 +66,5 @@ jobs:
           body: |
             ## AI Code Review Comments
             ```text
-            $(cat ../review_output.txt)
+            $(cat review_output.txt)
             ```
