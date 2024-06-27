@@ -23,6 +23,10 @@ jobs:
     - name: Get git diff
       run: git diff > test_diff.txt
 
+    - name: Display contents of test_diff.txt
+      run: cat test_diff.txt  # Utilisez 'type test_diff.txt' si vous êtes sur Windows
+
+
     - name: Run Python script for code review
       working-directory: calc
       env: # Or as an environment variable
