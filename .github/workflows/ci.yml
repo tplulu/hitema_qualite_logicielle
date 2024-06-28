@@ -55,25 +55,17 @@ jobs:
       - name: Display contents of review_output.txt
         run: cat review_output.txt
 
-      - name: Upload review output as artifact
-        uses: actions/upload-artifact@v2
-        with:
-          name: review-output
-          path: review_output.txt
-
-  comment:
-    needs: diff
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download review output artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: review-output
-          path: ../
-
       - name: Comment on PR with review output
-        uses: machine-learning-apps/pr-comment@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
         with:
-          path: review_output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const reviewOutput = fs.readFileSync('review_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## AI Code Review Comments\n\`\`\`text\n${reviewOutput}\n\`\`\``
+            })
