@@ -54,7 +54,7 @@ jobs:
         run: python review.py -f ../file_diffs.txt > ../review_output.txt
 
       - name: Display contents of review_output.txt
-        run: cat /review_output.txt
+        run: cat review_output.txt
 
       - id: keploytestreport
         name: Prepare Review Output
