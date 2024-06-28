@@ -4,30 +4,18 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest  # Utilisez "windows-latest" ou "macos-latest" si nécessaire
+  diff:
+    runs-on: ubuntu-latest
     name: Test changed-files
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # OR "2" -> Pour récupérer le commit précédent.
-
-      - name: Get changed files
-        id: changed-files
-        uses: tj-actions/changed-files@v44
-
-      - name: List all changed files
-        env:
-          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
-        run: |
-          echo "Changed files:"
-          for file in ${ALL_CHANGED_FILES}; do
-            echo "$file was changed"
-          done
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -39,14 +27,24 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Create diff file
+      - name: Run tests
         run: |
-          git diff > full_diff.txt
-          echo "Creating diffs for individual files..."
-          touch file_diffs.txt
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          pytest
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+
+      - name: Save git diff to full_diff.txt
+        run: git diff > full_diff.txt
+
+      - name: Save diffs for changed files to file_diffs.txt
+        env:
+          ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+        run: |
+          for file in ${ALL_CHANGED_FILES}; do
             echo "Diff for $file:" >> file_diffs.txt
-            git diff HEAD^ HEAD -- $file >> file_diffs.txt
+            git diff HEAD^ HEAD -- "$file" >> file_diffs.txt
             echo -e "\n\n" >> file_diffs.txt
           done
 
@@ -55,6 +53,24 @@ jobs:
 
       - name: Run Python script for code review
         working-directory: calc
-        env: 
+        env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python review.py -f ../file_diffs.txt
+        run: python review.py -f ../file_diffs.txt > ../review_output.txt
+
+      - name: Display contents of review_output.txt
+        run: cat review_output.txt
+
+      - name: Comment on PR with review output
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const reviewOutput = fs.readFileSync('review_output.txt', 'utf8');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## AI Code Review Comments\n\`\`\`text\n${reviewOutput}\n\`\`\``
+            })

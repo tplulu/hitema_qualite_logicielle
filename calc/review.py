@@ -11,7 +11,7 @@ api_key = os.environ['ANTHROPIC_API_KEY']
 
 # Vérifier que la clé API est correctement lue
 if not api_key:
-    raise ValueError("La clé API Anthropic n'a pas été trouvée. Veuillez vérifier votre fichier .env !!!")
+    raise ValueError("La clé API Anthropic n'a pas été trouvée. Veuillez vérifier votre fichier .env !")
 
 # Créer une instance du client Anthropic
 client = anthropic.Anthropic(api_key=api_key)
@@ -21,7 +21,8 @@ DEFAULT_MODEL = "claude-3-haiku-20240307"
 def analyze_code_diff(diff):
     try:
         # Structure du prompt pour l'IA
-        prompt = f"est-ce que tu peux me commenter le code suivant et répondre comme si tu postait un commentaire sur github : {diff}"
+        prompt = f"Est-ce que tu peux me commenter le code suivant et répondre comme si tu postait un commentaire sur github : {diff}"
+
         # Appel à l'API Anthropic pour générer des suggestions de revue de code
         response = client.messages.create(
             model=DEFAULT_MODEL,
@@ -52,13 +53,14 @@ def main(file_path):
         with open(file_path, 'r') as file:
             diff = file.read()
         feedback = analyze_code_diff(diff)
-        print(feedback)
+        with open('../review_output.txt', 'w') as file:
+            file.write(feedback)
     except Exception as e:
-        print(f"Error reading file: {str(e)}")
+        with open("../review_output.txt", "w") as output_file:
+            output_file.write(f"Error reading file: {str(e)}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Analyze code diff for review.')
     parser.add_argument('-f', '--file', type=str, required=True, help='Path to the file containing the code diff')
     args = parser.parse_args()
     main(args.file)
-
