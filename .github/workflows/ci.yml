@@ -27,6 +27,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Run tests
+        run: |
+          pytest
+
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@v44
