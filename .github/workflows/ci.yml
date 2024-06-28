@@ -54,17 +54,27 @@ jobs:
         run: python review.py -f ../file_diffs.txt > ../review_output.txt
 
       - name: Display contents of review_output.txt
-        run: cat review_output.txt
+        run: cat ../review_output.txt
 
-      - name: Comment on Pull Request
+      - id: keploytestreport
+        name: Prepare Review Output
+        run:  |
+          echo 'REVIEW_OUTPUT<<EOF' >> $GITHUB_ENV
+          cat ../review_output.txt >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
+        shell: bash
+
+      - name: Comment on PR
         if: github.event_name == 'pull_request'
-        uses: peter-evans/create-or-update-comment@v3
+        uses: actions/github-script@v6
+        env:
+          REVIEW_OUTPUT: ${{ env.REVIEW_OUTPUT }}
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
-          issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            ## AI Code Review Comments
-            ```text
-            ${{ steps.run-code-review.outputs.stdout }}
-            ```
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: process.env.REVIEW_OUTPUT
+            })
