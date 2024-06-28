@@ -42,7 +42,6 @@ jobs:
             echo "Diff for $file:" >> file_diffs.txt
             git diff HEAD^ HEAD -- "$file" >> file_diffs.txt
             echo -e "\n\n" >> file_diffs.txt
-          done
 
       - name: Display contents of file_diffs.txt
         run: cat file_diffs.txt
@@ -56,21 +55,25 @@ jobs:
       - name: Display contents of review_output.txt
         run: cat review_output.txt
 
-      - id: prepare-review-output
-        name: Prepare Review Output
-        run: |
-          REVIEW_OUTPUT=$(cat review_output.txt)
-          echo "::set-output name=REVIEW_OUTPUT::$REVIEW_OUTPUT"
-
-      - name: Comment on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
+      - name: Upload review output as artifact
+        uses: actions/upload-artifact@v2
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: "${{ steps.prepare-review-output.outputs.REVIEW_OUTPUT }}"
-            })
+          name: review-output
+          path: review_output.txt
+
+  comment:
+    needs: diff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download review output artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: review-output
+          path: ../
+
+      - name: Comment on PR with review output
+        uses: machine-learning-apps/pr-comment@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          path: review_output.txt
