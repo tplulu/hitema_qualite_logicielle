@@ -59,9 +59,9 @@ jobs:
       - id: keploytestreport
         name: Prepare Review Output
         run:  |
-          echo 'REVIEW_OUTPUT<<EOF' >> $GITHUB_ENV
+          echo "REVIEW_OUTPUT<<EOF" >> $GITHUB_ENV
           cat review_output.txt >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
         shell: bash
 
       - name: Comment on PR
