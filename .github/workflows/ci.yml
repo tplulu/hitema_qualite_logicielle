@@ -56,19 +56,15 @@ jobs:
       - name: Display contents of review_output.txt
         run: cat review_output.txt
 
-      - id: keploytestreport
+      - id: prepare-review-output
         name: Prepare Review Output
-        run:  |
-          echo "REVIEW_OUTPUT<<EOF" >> $GITHUB_ENV
-          cat review_output.txt >> $GITHUB_ENV
-          echo "EOF" >> $GITHUB_ENV
-        shell: bash
+        run: |
+          REVIEW_OUTPUT=$(cat review_output.txt)
+          echo "::set-output name=REVIEW_OUTPUT::$REVIEW_OUTPUT"
 
       - name: Comment on PR
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v6
-        env:
-          REVIEW_OUTPUT: ${{ env.REVIEW_OUTPUT }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -76,5 +72,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: process.env.REVIEW_OUTPUT
+              body: "${{ steps.prepare-review-output.outputs.REVIEW_OUTPUT }}"
             })
